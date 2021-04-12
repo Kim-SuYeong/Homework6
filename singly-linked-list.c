@@ -1,8 +1,6 @@
 #include<stdio.h>
 #include<stdlib.h>
 
-/* 필요한 헤더파일 추가 */
-
 typedef struct Node {   //연결 리스트의 노드 정의
 	int key;
 	struct Node* link; //다음 노드의 주소값 가리킴 
@@ -106,10 +104,8 @@ headNode* initialize(headNode* h)
 	return temp; //headNode에 대한 메모리를 할당한 것을 리턴
 }
 
-int freeList(headNode* h){
-	/* h와 연결된 listNode 메모리 해제
-	 * headNode도 해제되어야 함.
-	 */
+int freeList(headNode* h)
+{
 	listNode* p = h->first; //연결 리스트 노드 p에 리스트의 처음을 저장하면서 선언
 
 	listNode* prev = NULL; //prev : 삭제할 노드의 선행 노드를 가리키는 포인터
@@ -138,8 +134,35 @@ int insertFirst(headNode* h, int key) {
 
 
 //리스트를 검색하여, 입력받은 key보다 큰값이 나오는 노드 바로 앞에 삽입
-int insertNode(headNode* h, int key) {
-
+int insertNode(headNode* h, int key) 
+{	
+	listNode* keysearch = (listNode*)malloc(sizeof(listNode)); //key값을 비교해나갈 keysearch 노드를 메모리 할당 받아서 생성
+	keysearch->key = key; //keysearch의 데이터 영역에 key값 저장
+	keysearch->link = NULL; //keysearch가 가리키는 주소를 NULL로 지정
+	listNode* compare = h->first; //compare : keysearch와 key값을 비교할 노드
+	if (keysearch->key < h->first->key) //입력받은 노드의 key의 개수가 1개일 때
+    {
+        keysearch->link = h->first;
+        h->first = keysearch;
+    }
+    else //입력받은 노드의 key의 개수가 2개 이상일 때
+	{
+		while (1)
+			{
+				if (compare->link == NULL) //아무것도 없을 때
+				{
+					compare->link = keysearch; //compare가 가리키는 주소를 keysearch로 지정 = keysearch가 가장 맨 처음의 노드가 됨
+					break; //break로 반복문 탈출
+				}
+				else if (keysearch->key < compare->link->key) //입력받은 key값보다 기존의 노드의 key값이 작을 때까지 다음 과정 반복
+				{
+					keysearch->link = compare->link; //기존의 노드가 가리키는 주소를 keysearch가 가리키게 함
+					compare->link = keysearch; //compare는 keysearch의 선행 노드가 됨
+					break; //break로 반복문 탈출
+				}
+				compare = compare->link; //입력받은 key값보다 더 큰 기존의 key값이 없을 경우
+			}
+	}
 	return 0;
 }
 
@@ -163,9 +186,16 @@ int insertLast(headNode* h, int key)
 
 
 
-//list의 첫번째 노드 삭제
+//list의 첫 번째 노드 삭제
 int deleteFirst(headNode* h) 
 {	
+	listNode* begin = h->first; //삭제할 노드(첫 번째 노드)
+	if(h->first == NULL) //빈 리스트이면 에러 메세지 출력
+	{
+		printf("error!\n");
+	}
+	h->first = h->first->link; //첫 번째 노드가 다음 노드(새로운 첫 번째 노드)를 가리키게 함
+	free(begin); //첫 번째 노드 메모리 해제
 	return 0;
 }
 
@@ -207,8 +237,19 @@ int deleteLast(headNode* h)
 
 
 //리스트의 링크를 역순으로 재 배치
-int invertList(headNode* h) {
-
+int invertList(headNode* h) 
+{
+	listNode* middle = NULL; //공백 노드 middle 생성 -> lead의 이전 노드
+	listNode* trail; //trail : middle의 이전 노드
+	listNode* lead = h->first; //현재 노드 
+	while(lead != NULL) //현재 노드(반전이 되면 가장 맨 끝의 노드가 됨)가 NULL을 가리킬 때까지 반복
+	{
+		trail = middle; //trail을 middle쪽으로 이동
+		middle = lead; //middle을 lead쪽으로 이동
+		lead = lead->link; //lead를 다음 링크로 이동
+		middle->link = trail; //middle이 middle의 이전 노드인 trail을 가리킴
+	}
+	h->first = middle; //현재 노드가 현재 노드의 이전 노드인 middle을 가리킴
 	return 0;
 }
 
